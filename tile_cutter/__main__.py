@@ -39,10 +39,13 @@ with Image(file=args.image) as source:
         (square_source.width - source.width) // 2,
         (square_source.height - source.height) // 2)
 
-queue = []
 for z in range(1, max_zoom + 1):
     source_size = int(args.tile_size * (2 ** (max_zoom - z)))
     logging.info("zoom level %d: source %dx%d", z, source_size, source_size)
+
+    current_image = 0
+    total_images = (image_size // source_size) ** 2
+    start_time = last_report_time = time.clock()
 
     for y in range(0, image_size // source_size):
         for x in range(0, image_size // source_size):
@@ -51,21 +54,19 @@ for z in range(1, max_zoom + 1):
             logging.debug("tile %s: source %dx%d%+d%+d",
                           path, source_size, source_size, crop_x, crop_y)
 
-            tile = square_source.clone()
-            tile.crop(crop_x, crop_y, width=source_size, height=source_size)
-            tile.resize(tile_size, tile_size)
-            queue.append((tile, path))
+            with square_source.clone() as tile:
+                tile.crop(crop_x, crop_y, width=source_size, height=source_size)
+                tile.resize(tile_size, tile_size)
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                tile.save(filename=path)
 
-current_image = 0
-last_report_time = time.clock()
-for (tile, path) in queue:
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    tile.save(filename=path)
-    tile.close()
-
-    current_image += 1
-    if time.clock() - last_report_time > 1:
-        last_report_time = time.clock()
-        logging.info("completion: %.2f%%", current_image / len(queue) * 100)
+            current_image += 1
+            if time.clock() - last_report_time > 1:
+                last_report_time = time.clock()
+                eta = (last_report_time - start_time) / current_image * \
+                        (total_images - current_image)
+                logging.info("completion: %.2f%% (ETA: %dh%dm%ds)",
+                             current_image / total_images * 100,
+                             eta // 3600, (eta % 3600) // 60, eta % 60)
 
 logging.info("done")
