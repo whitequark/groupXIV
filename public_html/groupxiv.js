@@ -20,7 +20,7 @@ function GroupXIV(options) {
   var map = L.map(options.viewport, {
     minZoom: 1,
     maxZoom: Math.ceil(Math.log2(imageSize / tileSize)),
-    center:  [0, 0],
+    center:  [imageSize / 2, imageSize / 2],
     zoom:    1,
     crs:     L.CRS.Simple,
   });
