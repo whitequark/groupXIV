@@ -41,7 +41,7 @@ function GroupXIV(options) {
   }).addTo(map);
 
   L.control.fullscreen({
-    forceSeparateButton: false,
+    forceSeparateButton: true,
   }).addTo(map);
 
   map.on('enterFullscreen', function(){
@@ -51,4 +51,8 @@ function GroupXIV(options) {
   map.on('exitFullscreen', function(){
     document.getElementById('viewer').style.position = 'absolute';
   });
+
+  L.Control.loading({
+    separate: true
+  }).addTo(map);
 }
