@@ -27,9 +27,9 @@ function GroupXIV(options) {
 
   var marginX = (imageSize - width) / 2,
       marginY = (imageSize - height) / 2;
-  var bounds = new L.LatLngBounds(
+  map.setMaxBounds(new L.LatLngBounds(
     map.unproject([imageSize - marginX, marginY], map.getMaxZoom()),
-    map.unproject([marginX, imageSize - marginY], map.getMaxZoom()));
+    map.unproject([marginX, imageSize - marginY], map.getMaxZoom())));
 
   L.tileLayer(baseURL + "-tiles/{z}/{x}/{y}.png", {
     maxZoom:         map.getMaxZoom(),
@@ -40,5 +40,15 @@ function GroupXIV(options) {
     attribution:     baseURL,
   }).addTo(map);
 
-  map.setMaxBounds(bounds);
+  L.control.fullscreen({
+    forceSeparateButton: false,
+  }).addTo(map);
+
+  map.on('enterFullscreen', function(){
+    document.getElementById('viewer').style.position = 'relative';
+  });
+
+  map.on('exitFullscreen', function(){
+    document.getElementById('viewer').style.position = 'absolute';
+  });
 }
