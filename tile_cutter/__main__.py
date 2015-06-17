@@ -24,7 +24,7 @@ with Image(file=args.image) as source:
     logging.info("image size: %dx%d", source.width, source.height)
 
     # every zoom level has 2x more tiles
-    max_zoom = math.ceil(math.log2(max(source.size) / args.tile_size))
+    max_zoom = math.ceil(math.log(max(source.size) / args.tile_size, 2))
     logging.info("zoom levels: 1-%d", max_zoom)
 
     image_size = args.tile_size * (2 ** max_zoom)
