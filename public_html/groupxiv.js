@@ -5,7 +5,7 @@
    imageSize: tiled image dimension
    width:     original image width
    height:    original image height
-   scale:     image scale (µm/px)
+   scale:     image scale (nm/px)
    tileSize:  tile dimension (default: 512)
  */
 function GroupXIV(options) {
@@ -53,6 +53,10 @@ function GroupXIV(options) {
   });
 
   L.Control.loading({
-    separate: true
+    separate: true,
+  }).addTo(map);
+
+  L.control.nanoscale({
+    nanometersPerPixel: scale,
   }).addTo(map);
 }
