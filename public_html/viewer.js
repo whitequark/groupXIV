@@ -27,19 +27,30 @@ function initViewer(url, params) {
       layers: options.layers,
     });
 
-    if(params.x && params.y && params.z) {
-      var center = map.unproject([parseInt(params.x), parseInt(params.y)], map.getMaxZoom() - 1),
-          zoom = parseInt(params.z);
-      map.setView(center, zoom);
+    function moveMap(params) {
+      if(params.x && params.y && params.z) {
+        var center = map.unproject([parseInt(params.x), parseInt(params.y)], map.getMaxZoom() - 1),
+            zoom = parseInt(params.z);
+        map.setView(center, zoom);
+      }
     }
 
     map.on('moveend', function(e) {
       var center = map.project(map.getCenter(), map.getMaxZoom() - 1),
           zoom = map.getZoom();
-      window.location.hash = "#url=" + url + "&x=" + center.x + "&y=" + center.y + "&z=" + zoom;
+      history.replaceState(null, null, "#url=" + url +
+        "&x=" + (center.x|0) + "&y=" + (center.y|0) + "&z=" + zoom);
     });
 
-    return map;
+    moveMap(params);
+    window.onhashchange = function() {
+      var params = parseHash();
+      if(params["url"] != url) {
+        window.location.reload();
+      } else {
+        moveMap(params);
+      }
+    }
   };
   req.open("get", url, true);
   req.send();
