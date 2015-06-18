@@ -18,6 +18,8 @@ function initViewer(url, params) {
       layer.URL = url + "/../" + layer.URL;
     });
 
+    document.title = options.name + " \u00b7 GroupXIV microphotography viewer"
+
     var map = GroupXIV({
       viewport: "viewer",
       scale: options.scale,

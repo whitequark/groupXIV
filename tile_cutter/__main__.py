@@ -34,6 +34,7 @@ with Image(file=args.image) as source:
     logging.info("tiled size: %dx%d-%d-%d", image_size, image_size, offset_x, offset_y)
 
     layers.append({
+        "name": "???",
         "URL": os.path.basename(args.image.name),
         "width": source.width,
         "height": source.height,
@@ -78,6 +79,7 @@ for z in range(1, max_zoom + 1):
 
 with open("%s.json" % args.image.name, "w") as descr:
     descr.write(json.dumps({
+        "name": "???"
         "scale": None,
         "layers": layers
     }))
