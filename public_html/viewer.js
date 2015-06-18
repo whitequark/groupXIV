@@ -10,35 +10,40 @@ function parseHash() {
   return output;
 }
 
-function initViewer(options, params) {
-  var map = GroupXIV({
-    viewport: "viewer",
-    scale: options.scale,
-    tileSize: options.tileSize,
-    layers: options.layers,
-  });
+function initViewer(url, params) {
+  var req = new XMLHttpRequest();
+  req.onload = function() {
+    var options = JSON.parse(req.responseText);
+    options.layers.forEach(function(layer) {
+      layer.URL = url + "/../" + layer.URL;
+    });
 
-  if(params.x && params.y && params.z) {
-    var center = map.unproject([parseInt(params.x), parseInt(params.y)], map.getMaxZoom()),
-        zoom = parseInt(params.z);
-    // setTimeout(function() {
+    var map = GroupXIV({
+      viewport: "viewer",
+      scale: options.scale,
+      tileSize: options.tileSize,
+      layers: options.layers,
+    });
+
+    if(params.x && params.y && params.z) {
+      var center = map.unproject([parseInt(params.x), parseInt(params.y)], map.getMaxZoom() - 1),
+          zoom = parseInt(params.z);
       map.setView(center, zoom);
-    // }, 500);
-  }
+    }
 
-  map.on('moveend', function(e) {
-    var center = map.project(map.getCenter(), map.getMaxZoom()),
-        zoom = map.getZoom();
-    window.location.hash = "#x=" + center.x + "&y=" + center.y + "&z=" + zoom;
-  });
+    map.on('moveend', function(e) {
+      var center = map.project(map.getCenter(), map.getMaxZoom() - 1),
+          zoom = map.getZoom();
+      window.location.hash = "#url=" + url + "&x=" + center.x + "&y=" + center.y + "&z=" + zoom;
+    });
 
-  return map;
+    return map;
+  };
+  req.open("get", url, true);
+  req.send();
 }
 
 function pageLoad() {
-  window.map = initViewer({
-    scale: 540,
-    layers: [{ baseURL: "data/atmega8.png", width: 5348, height: 5144,
-               tileSize: 512, imageSize: 8192 }],
-  }, parseHash());
+  var params = parseHash();
+  initViewer(params["url"], params);
 }

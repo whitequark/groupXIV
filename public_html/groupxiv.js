@@ -2,12 +2,12 @@
  Options:
    viewport:  DOM id of the viewport
    scale:     image scale (nm/px)
-   tileSize:  tile dimension (default: 512)
    layers:    array of:
-     baseURL:   URL of the original image
-     imageSize: tiled image dimension
+     URL:       URL of the original image
      width:     original image width
      height:    original image height
+     tileSize:  tile dimension (default: 512)
+     imageSize: tiled image dimension
  */
 function GroupXIV(options) {
   var viewport  = options.viewport,
@@ -44,12 +44,12 @@ function GroupXIV(options) {
     map.unproject([marginX, maxImageSize - marginY], map.getMaxZoom() - 1)));
 
   layers.forEach(function(layer) {
-    L.tileLayer(layer.baseURL + "-tiles/{z}/{x}/{y}.png", {
+    L.tileLayer(layer.URL + "-tiles/{z}/{x}/{y}.png", {
       maxNativeZoom:   Math.ceil(Math.log2(layer.imageSize / layer.tileSize)),
       tileSize:        layer.tileSize,
       continuousWorld: true,
       detectRetina:    true,
-      attribution:     layer.baseURL,
+      attribution:     layer.URL,
     }).addTo(map);
   });
 

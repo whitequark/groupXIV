@@ -1,4 +1,4 @@
-import math, time, os, argparse, logging
+import math, time, os, argparse, logging, json
 from wand.image import Image
 
 parser = argparse.ArgumentParser(
@@ -17,6 +17,8 @@ if args.verbose:
 else:
     logging.basicConfig(level=logging.INFO)
 
+layers = []
+
 tile_size = args.tile_size
 logging.info("tile size: %dx%d", tile_size, tile_size)
 
@@ -31,8 +33,13 @@ with Image(file=args.image) as source:
     offset_x, offset_y = tuple((image_size - orig) // 2 for orig in source.size)
     logging.info("tiled size: %dx%d-%d-%d", image_size, image_size, offset_x, offset_y)
 
-    logging.info("GroupXIV options: {imageSize: %d, width: %d, height: %d}",
-                 image_size, source.width, source.height)
+    layers.append({
+        "URL": os.path.basename(args.image.name),
+        "width": source.width,
+        "height": source.height,
+        "tileSize": args.tile_size,
+        "imageSize": image_size
+    })
 
     square_source = Image(width=image_size, height=image_size)
     square_source.composite(source,
@@ -68,5 +75,12 @@ for z in range(1, max_zoom + 1):
                 logging.info("completion: %.2f%% (ETA: %dh%dm%ds)",
                              current_image / total_images * 100,
                              eta // 3600, (eta % 3600) // 60, eta % 60)
+
+with open("%s.json" % args.image.name, "w") as descr:
+    descr.write(json.dumps({
+        "scale": None,
+        "layers": layers
+    }))
+    logging.info("image description written to: %s" % descr.name)
 
 logging.info("done")
