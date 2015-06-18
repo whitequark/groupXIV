@@ -53,6 +53,16 @@ function GroupXIV(options) {
     }).addTo(map);
   });
 
+  L.control.nanoscale({
+    nanometersPerPixel: scale,
+    ratioAtZoom: map.getMaxZoom() - 1,
+  }).addTo(map);
+
+  L.control.nanomeasure({
+    nanometersPerPixel: scale,
+    ratioAtZoom: map.getMaxZoom() - 1,
+  }).addTo(map);
+
   L.control.fullscreen({
     forceSeparateButton: true,
   }).addTo(map);
@@ -67,11 +77,6 @@ function GroupXIV(options) {
 
   L.Control.loading({
     separate: true,
-  }).addTo(map);
-
-  L.control.nanoscale({
-    nanometersPerPixel: scale,
-    ratioAtZoom: map.getMaxZoom() - 1,
   }).addTo(map);
 
   return map;
