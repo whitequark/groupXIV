@@ -4,6 +4,7 @@ L.Control.Nanoscale = L.Control.extend({
     maxWidth: 300,
     updateWhenIdle: false,
     nanometersPerPixel: 1000,
+    /*ratioAtZoom: undefined,*/
   },
 
   onAdd: function (map) {
@@ -30,13 +31,15 @@ L.Control.Nanoscale = L.Control.extend({
   },
 
   _update: function () {
-    var bounds = this._map.getBounds(),
-        maxZoom = this._map.getMaxZoom(),
+    var options = this.options,
+
+        bounds = this._map.getBounds(),
+        maxZoom = options.ratioAtZoom !== undefined ? options.ratioAtZoom :
+                  this._map.getMaxZoom(),
         dist = (this._map.project(bounds.getNorthEast(), maxZoom).x -
                 this._map.project(bounds.getSouthWest(), maxZoom).x),
 
         size = this._map.getSize(),
-        options = this.options,
         maxNanometers = 0;
 
     if (size.x > 0) {

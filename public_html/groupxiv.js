@@ -71,6 +71,7 @@ function GroupXIV(options) {
 
   L.control.nanoscale({
     nanometersPerPixel: scale,
+    ratioAtZoom: map.getMaxZoom() - 1,
   }).addTo(map);
 
   return map;
