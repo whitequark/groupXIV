@@ -4,18 +4,16 @@
     <title>Atmel ATtiny24V :: GroupXIV silicon microphotography viewer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <link type="text/css" rel="stylesheet" href="vendor/leaflet/leaflet.css">
     <script type="text/javascript" src="vendor/leaflet/leaflet.js"></script>
-
-    <link type="text/css" rel="stylesheet" href="vendor/leaflet.fullscreen/Control.FullScreen.css">
+    <link type="text/css" rel="stylesheet" href="vendor/leaflet/leaflet.css">
     <script type="text/javascript" src="vendor/leaflet.fullscreen/Control.FullScreen.js"></script>
-
-    <link type="text/css" rel="stylesheet" href="vendor/leaflet.loading/Control.Loading.css">
+    <link type="text/css" rel="stylesheet" href="vendor/leaflet.fullscreen/Control.FullScreen.css">
     <script type="text/javascript" src="vendor/leaflet.loading/Control.Loading.js"></script>
-
+    <link type="text/css" rel="stylesheet" href="vendor/leaflet.loading/Control.Loading.css">
     <script type="text/javascript" src="vendor/leaflet.nanoscale/Control.Nanoscale.js"></script>
 
     <script type="text/javascript" src="groupxiv.js"></script>
+    <script type="text/javascript" src="viewer.js"></script>
 
     <style type="text/css">
       body { margin: 0; }
@@ -24,9 +22,7 @@
 </head>
 <body>
     <div id="viewer"></div>
-    <script>
-      GroupXIV({viewport: "viewer", baseURL: "data/atmega8.png", scale: 540, imageSize: 8192, width: 5348, height: 5144})
-    </script>
+    <script>pageLoad();</script>
 </body>
 </html>
 
