@@ -1,85 +1,122 @@
-L.NanomeasureUtil = {
+L.Nanomeasure = {};
+
+L.Nanomeasure.Util = {
     readableDistance: function(nanometers) {
         return nanometers < 1000 ? nanometers.toFixed(0) + ' nm' :
                nanometers < 1000000 ? (nanometers / 1000).toFixed(3) + ' \u00b5m' :
                (nanometers / 1000000).toFixed(3) + ' mm';
+    },
+
+    readableArea: function(nanometers) {
+        return nanometers < 1000*1000 ? nanometers.toFixed(0) + ' nm\u00b2' :
+               nanometers < 1000000*1000000 ?
+                    (nanometers / (1000*1000)).toFixed(0) + ' \u00b5m\u00b2' :
+                (nanometers / (1000000*1000000)).toFixed(3) + ' mm\u00b2';
+    },
+
+    polygonArea: function(points) {
+        var area = 0, j = points.length - 1;
+        for(var i = 0; i < points.length; i++) {
+            area += (points[j].x + points[i].x) * (points[j].y - points[i].y);
+            j = i;
+        }
+        return Math.abs(area / 2);
     }
 }
 
-L.Polyline.Nanomeasure = L.Draw.Polyline.extend({
-    addHooks: function() {
-        L.Draw.Polyline.prototype.addHooks.call(this);
-        if (this._map) {
-            this._map.on('click', this._onClick, this);
-            this._map.on('zoomstart', this._onZoomStart, this);
-            this._startShape();
+L.Nanomeasure.Mixin = function(parent) {
+    return {
+        addHooks: function() {
+            parent.prototype.addHooks.call(this);
+
+            if (this._map) {
+                this._map.on('click', this._onClick, this);
+                this._map.on('zoomstart', this._onZoomStart, this);
+                this._drawing = true;
+            }
+        },
+
+        removeHooks: function () {
+            this._finishShape();
+            this._map.off('zoomstart', this._onZoomStart, this);
+            this._map.off('click', this._onClick, this);
+
+            parent.prototype.removeHooks.call(this);
+        },
+
+        _startShape: function() {
+            this._drawing = true;
+            this._poly = new L.Polyline([], this.options.shapeOptions);
+
+            this._container.style.cursor = 'crosshair';
+
+            this._updateTooltip();
+            this._map.on('mousemove', this._onMouseMove, this);
+        },
+
+        _finishShape: function () {
+            this._drawing = false;
+
+            this._cleanUpShape();
+            this._clearGuides();
+
+            this._finalize();
+            this._updateTooltip(this._currentLatLng);
+
+            this._map.off('mousemove', this._onMouseMove, this);
+            this._container.style.cursor = '';
+        },
+
+        _removeShape: function() {
+            this._markers.splice(0);
+            this._markerGroup.clearLayers();
+
+            if (!this._poly)
+                return;
+            this._map.removeLayer(this._poly);
+            delete this._poly;
+        },
+
+        _onClick: function(e) {
+            if (!this._drawing) {
+                this._removeShape();
+                this._startShape();
+            }
+        },
+
+        _onZoomStart: function(e) {
+            this._tooltip._container.style.visibility = 'hidden';
+        },
+
+        _onZoomEnd: function(e) {
+            if(this._drawing) {
+                parent.prototype._onZoomEnd.call(this, e);
+            }
+
+            this._updateTooltip(this._currentLatLng);
+
+            this._tooltip._container.style.visibility = 'inherit';
+        },
+
+        _getTooltipText: function() {
+            var labelText = parent.prototype._getTooltipText.call(this);
+            if (!this._drawing) {
+                // put measurement string into main text
+                labelText.text = labelText.subtext;
+                delete labelText.subtext;
+            }
+            return labelText;
         }
-    },
+    }
+}
 
-    removeHooks: function () {
-        L.Draw.Polyline.prototype.removeHooks.call(this);
-
-        this._removeShape();
-        this._map.off('zoomstart', this._onZoomStart, this);
-        this._map.off('click', this._onClick, this);
-    },
-
-    _startShape: function() {
-        this._drawing = true;
-        this._poly = new L.Polyline([], this.options.shapeOptions);
-
-        this._container.style.cursor = 'crosshair';
-
-        this._updateTooltip();
-        this._map.on('mousemove', this._onMouseMove, this);
-    },
-
-    _finishShape: function () {
-        this._drawing = false;
-
-        this._cleanUpShape();
-        this._clearGuides();
-
-        this._updateTooltip(this._markers[this._markers.length - 1].getLatLng());
-
-        this._map.off('mousemove', this._onMouseMove, this);
-        this._container.style.cursor = '';
-    },
-
-    _removeShape: function() {
-        this._markers.splice(0);
-        this._markerGroup.clearLayers();
-
-        this._container.style.cursor = '';
-
-        if (!this._poly)
-            return;
-        this._map.removeLayer(this._poly);
-        delete this._poly;
-    },
-
-    _onClick: function(e) {
-        if (!this._drawing) {
-            this._removeShape();
-            this._startShape();
-            return;
+L.Nanomeasure.Distance = L.Draw.Polyline.
+        extend(L.Nanomeasure.Mixin(L.Draw.Polyline)).
+        extend({
+    _finalize: function() {
+        if(this._markers.length > 0) {
+            this._currentLatLng = this._markers[this._markers.length - 1].getLatLng();
         }
-    },
-
-    _onZoomStart: function(e) {
-        this._tooltip._container.style.visibility = 'hidden';
-    },
-
-    _onZoomEnd: function(e) {
-        L.Draw.Polyline.prototype._onZoomEnd.call(this, e);
-
-        if(this.drawing) {
-            this._tooltip.updatePosition(this._currentLatLng);
-        } else {
-            this._tooltip.updatePosition(this._markers[this._markers.length - 1].getLatLng());
-        }
-
-        this._tooltip._container.style.visibility = 'inherit';
     },
 
     _updateRunningMeasure: function (latlng, added) {
@@ -116,64 +153,139 @@ L.Polyline.Nanomeasure = L.Draw.Polyline.extend({
                 this._map.project(previousLatLng, zoom)) * this.options.nanometersPerPixel;
         }
 
-        return L.NanomeasureUtil.readableDistance(distance);
+        return L.Nanomeasure.Util.readableDistance(distance);
+    },
+});
+
+L.Nanomeasure.Area = L.Draw.Polygon.
+        extend(L.Nanomeasure.Mixin(L.Draw.Polygon)).
+        extend({
+    _finalize: function() {
+        if(this._markers.length > 0) {
+            this._currentLatLng = this._markers[0].getLatLng();
+        }
+
+        if(this._shapeIsValid())
+            this._poly.addLatLng(this._markers[0].getLatLng())
     },
 
-    _getTooltipText: function() {
-        var labelText = L.Draw.Polyline.prototype._getTooltipText.call(this);
-        if (!this._drawing) {
-            labelText.text = labelText.subtext;
-            delete labelText.subtext;
+    _vertexChanged: function (latlng, added) {
+        // Check to see if we should show the area
+        if (!this.options.allowIntersection && this.options.showArea) {
+            var zoom = this.options.ratioAtZoom !== undefined ?
+                        this.options.ratioAtZoom : this._map.getMaxZoom(),
+                map = this._map;
+            this._area = L.Nanomeasure.Util.polygonArea(
+                this._poly.getLatLngs().map(function(latlng) {
+                    return map.project(latlng, zoom);
+                })) * Math.pow(this.options.nanometersPerPixel, 2);
         }
-        return labelText;
-    }
+
+        L.Draw.Polyline.prototype._vertexChanged.call(this, latlng, added);
+    },
+
+    _getMeasurementString: function () {
+        var area = this._area;
+
+        if (!area) {
+            return null;
+        }
+
+        return L.Nanomeasure.Util.readableArea(area);
+    },
+
 });
 
 L.Control.Nanomeasure = L.Control.extend({
     statics: {
-        TITLE: 'Measure distances'
+        DISTANCE: 'Measure distance',
+        AREA: 'Measure area',
     },
 
     options: {
         position: 'topleft',
+        measureDistance: {},
+        measureArea: {},
         nanometersPerPixel: 1000,
         /*ratioAtZoom: undefined,*/
     },
 
-    toggle: function() {
-        if (this.handler.enabled()) {
-            this.handler.disable.call(this.handler);
+    toggleDistance: function() {
+        if (this.measureDistance.enabled()) {
+            this.measureDistance.disable();
         } else {
-            this.handler.enable.call(this.handler);
+            if(this.measureArea.enabled()) {
+                this.measureArea.disable();
+            }
+
+            this.measureDistance.enable();
+        }
+    },
+
+    toggleArea: function() {
+        if (this.measureArea.enabled()) {
+            this.measureArea.disable();
+        } else {
+            if(this.measureDistance.enabled()) {
+                this.measureDistance.disable();
+            }
+
+            this.measureArea.enable();
         }
     },
 
     onAdd: function(map) {
-        var className = 'leaflet-control-draw';
+        var className = 'leaflet-control-nanomeasure leaflet-control-nanomeasure';
 
         this._container = L.DomUtil.create('div', 'leaflet-bar');
 
-        this.handler = new L.Polyline.Nanomeasure(map, {
-            nanometersPerPixel: this.options.nanometersPerPixel,
-            ratioAtZoom: this.options.ratioAtZoom,
-        });
-
-        this.handler.on('enabled', function () {
-            L.DomUtil.addClass(this._container, 'enabled');
-        }, this);
-
-        this.handler.on('disabled', function () {
-            L.DomUtil.removeClass(this._container, 'enabled');
-        }, this);
-
-        var link = L.DomUtil.create('a', className + '-nanomeasure', this._container);
-        link.href = '#';
-        link.title = L.Control.Nanomeasure.TITLE;
+        var distanceButton = L.DomUtil.create('a', className + '-distance', this._container);
+        distanceButton.href = '#';
+        distanceButton.title = L.Control.Nanomeasure.DISTANCE;
 
         L.DomEvent
-            .addListener(link, 'click', L.DomEvent.stopPropagation)
-            .addListener(link, 'click', L.DomEvent.preventDefault)
-            .addListener(link, 'click', this.toggle, this);
+            .addListener(distanceButton, 'click', L.DomEvent.stopPropagation)
+            .addListener(distanceButton, 'click', L.DomEvent.preventDefault)
+            .addListener(distanceButton, 'click', this.toggleDistance, this);
+
+        this.measureDistance = new L.Nanomeasure.Distance(map,
+            L.extend(this.options.measureDistance, {
+                nanometersPerPixel: this.options.nanometersPerPixel,
+                ratioAtZoom: this.options.ratioAtZoom,
+            }));
+
+        this.measureDistance.on('enabled', function () {
+            L.DomUtil.addClass(distanceButton, 'enabled');
+        }, this);
+
+        this.measureDistance.on('disabled', function () {
+            L.DomUtil.removeClass(distanceButton, 'enabled');
+        }, this);
+
+        var areaButton = L.DomUtil.create('a', className + '-area', this._container);
+        areaButton.href = '#';
+        areaButton.title = L.Control.Nanomeasure.AREA;
+
+        L.DomEvent
+            .addListener(areaButton, 'click', L.DomEvent.stopPropagation)
+            .addListener(areaButton, 'click', L.DomEvent.preventDefault)
+            .addListener(areaButton, 'click', this.toggleArea, this);
+
+        this.measureArea = new L.Nanomeasure.Area(map,
+            L.extend(this.options.measureArea, {
+                nanometersPerPixel: this.options.nanometersPerPixel,
+                ratioAtZoom: this.options.ratioAtZoom,
+                allowIntersection: false,
+                showArea: true,
+            }));
+
+        this.measureArea.on('enabled', function () {
+            L.DomUtil.addClass(areaButton, 'enabled');
+        }, this);
+
+        this.measureArea.on('disabled', function () {
+            L.DomUtil.removeClass(areaButton, 'enabled');
+        }, this);
 
         return this._container;
     }

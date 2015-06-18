@@ -1,3 +1,15 @@
-.leaflet-control-draw-nanomeasure {
-    background-image: url(images/measure-control.png);
+.leaflet-control-nanomeasure-distance {
+    background-image: url(images/measure-distance-2x.png);
+}
+
+.leaflet-control-nanomeasure-area {
+    background-image: url(images/measure-area-2x.png);
+}
+
+.leaflet-control-nanomeasure.enabled {
+    background-color: #ffe0e0;
+}
+
+.leaflet-control-nanomeasure.enabled:hover {
+    background-color: #ffd0d0;
 }
