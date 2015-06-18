@@ -79,7 +79,7 @@ for z in range(1, max_zoom + 1):
 
 with open("%s.json" % args.image.name, "w") as descr:
     descr.write(json.dumps({
-        "name": "???"
+        "name": "???",
         "scale": None,
         "layers": layers
     }))
