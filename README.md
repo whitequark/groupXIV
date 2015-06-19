@@ -66,7 +66,7 @@ Bonus: image stitching with Hugin
   12. In preview window, under _Projection_ tab, left list box, select "Normal (rectilinear)".
   13. In preview window, use the sliders to the bottom and the right to fit the image in the viewing area; under _Move/Drag_ tab, _Drag mode:_, select "mosaic", then draw the image at the center. It allows you to estimate whether the fit is good. A good fit is seamless and all straight lines on the sample should appear completely straight in Hugin.
   14. In preview window, select the _Crop_ tab, then move the areas that are highlighted when you move the cursor near the edges of the viewing area so that only the sample is inside the white rectangle.
-  15. In main window, under _Stitcher_ tab, under _Panorama Outputs:_ select "Exposure corrected, low dynamic range"; under _Panorama Outputs:_, _Format:_ select "PNG", under _Processing_, _Blender:_, click _Options_, enter `--fine-mask`, click _OK_.
+  15. In main window, under _Stitcher_ tab, under _Canvas size:_, click _Calculate optimal size_; under _Panorama Outputs:_ select "Exposure corrected, low dynamic range"; under _Panorama Outputs:_, _Format:_ select "PNG", under _Processing_, _Blender:_, click _Options_, enter `--fine-mask`, click _OK_.
   16. In main window, under _Stitcher_ tab click _Stitch!_. This will first open a save dialog for the Hugin project, then it will open another save dialog for the panorama output as well as intermediates (which will be temporarily placed in the same location as the panorama output), then it will open a PTBatcherGUI window. PTBatcherGUI could complain about assertion failures; ignore that.
   17. PTBatcherGUI will automatically process all files in a few dozens of minutes to a few hours. Done!
 
