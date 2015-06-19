@@ -45,6 +45,7 @@ Bonus: microphotography tips
 ----------------------------
 
   * Image stitching software can mitigate a reasonable amount of out-of-focus pixels; even 30% usually produces tolerable results as long as every area is in focus at least once.
+  * If your imaging setup consistently produces out-of-focus pixels in the same regions, it's best to cut them out, e.g. using ImageMagick: `for i in raw*.png; do convert $i cropped-$i -crop WxH+X+Y`.
   * Image stitching software can mitigate a substantial difference in exposure, but it is instead recommended to keep exposure constant during capture. A good idea is to find an area where a low-reflectivity area, such as many thin metal interconnect traces, is immediately adjacent to a high-reflectivity area, such as a metal polygon, and adjust exposure so that neither is under- or overexposed.
 
 Bonus: image stitching with Hugin
