@@ -210,17 +210,7 @@ L.Control.Nanomeasure = L.Control.extend({
         /*ratioAtZoom: undefined,*/
     },
 
-    toggleDistance: function() {
-        if (this.measureDistance.enabled()) {
-            this.measureDistance.disable();
-        } else {
-            if(this.measureArea.enabled()) {
-                this.measureArea.disable();
-            }
-
-            this.measureDistance.enable();
-        }
-    },
+    measurementTools: [],
 
     toggleArea: function() {
         if (this.measureArea.enabled()) {
@@ -234,58 +224,58 @@ L.Control.Nanomeasure = L.Control.extend({
         }
     },
 
-    onAdd: function(map) {
-        var className = 'leaflet-control-nanomeasure leaflet-control-nanomeasure';
+    addButton: function(className, title, measurementTool) {
+        var baseClassName = 'leaflet-control-nanomeasure leaflet-control-nanomeasure';
+        var button = L.DomUtil.create('a', baseClassName + '-' + className, this._container);
+        button.href = '#';
+        button.title = title;
 
+        this.measurementTools.push(measurementTool);
+
+        var $this = this;
+        function toggleTool() {
+            if(measurementTool.enabled()) {
+                measurementTool.disable();
+            } else {
+                $this.measurementTools.forEach(function(otherTool) {
+                    otherTool.disable();
+                });
+                measurementTool.enable();
+            }
+        }
+
+        L.DomEvent
+            .addListener(button, 'click', L.DomEvent.stopPropagation)
+            .addListener(button, 'click', L.DomEvent.preventDefault)
+            .addListener(button, 'click', toggleTool, this);
+
+        measurementTool.on('enabled', function () {
+            L.DomUtil.addClass(button, 'enabled');
+        }, this);
+
+        measurementTool.on('disabled', function () {
+            L.DomUtil.removeClass(button, 'enabled');
+        }, this);
+    },
+
+    onAdd: function(map) {
         this._container = L.DomUtil.create('div', 'leaflet-bar');
 
-        var distanceButton = L.DomUtil.create('a', className + '-distance', this._container);
-        distanceButton.href = '#';
-        distanceButton.title = L.Control.Nanomeasure.DISTANCE;
+        this.addButton('distance', L.Control.Nanomeasure.DISTANCE,
+            new L.Nanomeasure.Distance(map,
+                L.extend(this.options.measureDistance, {
+                    nanometersPerPixel: this.options.nanometersPerPixel,
+                    ratioAtZoom: this.options.ratioAtZoom,
+                })));
 
-        L.DomEvent
-            .addListener(distanceButton, 'click', L.DomEvent.stopPropagation)
-            .addListener(distanceButton, 'click', L.DomEvent.preventDefault)
-            .addListener(distanceButton, 'click', this.toggleDistance, this);
-
-        this.measureDistance = new L.Nanomeasure.Distance(map,
-            L.extend(this.options.measureDistance, {
-                nanometersPerPixel: this.options.nanometersPerPixel,
-                ratioAtZoom: this.options.ratioAtZoom,
-            }));
-
-        this.measureDistance.on('enabled', function () {
-            L.DomUtil.addClass(distanceButton, 'enabled');
-        }, this);
-
-        this.measureDistance.on('disabled', function () {
-            L.DomUtil.removeClass(distanceButton, 'enabled');
-        }, this);
-
-        var areaButton = L.DomUtil.create('a', className + '-area', this._container);
-        areaButton.href = '#';
-        areaButton.title = L.Control.Nanomeasure.AREA;
-
-        L.DomEvent
-            .addListener(areaButton, 'click', L.DomEvent.stopPropagation)
-            .addListener(areaButton, 'click', L.DomEvent.preventDefault)
-            .addListener(areaButton, 'click', this.toggleArea, this);
-
-        this.measureArea = new L.Nanomeasure.Area(map,
-            L.extend(this.options.measureArea, {
-                nanometersPerPixel: this.options.nanometersPerPixel,
-                ratioAtZoom: this.options.ratioAtZoom,
-                allowIntersection: false,
-                showArea: true,
-            }));
-
-        this.measureArea.on('enabled', function () {
-            L.DomUtil.addClass(areaButton, 'enabled');
-        }, this);
-
-        this.measureArea.on('disabled', function () {
-            L.DomUtil.removeClass(areaButton, 'enabled');
-        }, this);
+        this.addButton('area', L.Control.Nanomeasure.AREA,
+            new L.Nanomeasure.Area(map,
+                L.extend(this.options.measureArea, {
+                    nanometersPerPixel: this.options.nanometersPerPixel,
+                    ratioAtZoom: this.options.ratioAtZoom,
+                    allowIntersection: false,
+                    showArea: true,
+                })));
 
         return this._container;
     }
