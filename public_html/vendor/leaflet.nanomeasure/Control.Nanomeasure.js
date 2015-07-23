@@ -2,14 +2,16 @@ L.Nanomeasure = {};
 
 L.Nanomeasure.Util = {
     readableDistance: function(nanometers) {
-        return nanometers < 1000 ? nanometers.toFixed(0) + ' nm' :
-               nanometers < 1000000 ? (nanometers / 1000).toFixed(3) + ' \u00b5m' :
+        var absNanometers = Math.abs(nanometers);
+        return absNanometers < 1000 ? nanometers.toFixed(0) + ' nm' :
+               absNanometers < 1000000 ? (nanometers / 1000).toFixed(3) + ' \u00b5m' :
                (nanometers / 1000000).toFixed(3) + ' mm';
     },
 
     readableArea: function(nanometers) {
-        return nanometers < 1000*1000 ? nanometers.toFixed(0) + ' nm\u00b2' :
-               nanometers < 1000000*1000000 ?
+        var absNanometers = Math.abs(nanometers);
+        return absNanometers < 1000*1000 ? nanometers.toFixed(0) + ' nm\u00b2' :
+               absNanometers < 1000000*1000000 ?
                     (nanometers / (1000*1000)).toFixed(0) + ' \u00b5m\u00b2' :
                 (nanometers / (1000000*1000000)).toFixed(3) + ' mm\u00b2';
     },
@@ -24,7 +26,67 @@ L.Nanomeasure.Util = {
     }
 }
 
-L.Nanomeasure.Mixin = function(parent) {
+L.Nanomeasure.Coordinates = L.Draw.Marker.
+        extend({
+    addHooks: function() {
+        L.Draw.Marker.prototype.addHooks.call(this);
+
+        if (this._map) {
+            this._drawing = true;
+            this._map.on('zoomstart', this._onZoomStart, this);
+            this._map.on('zoomend', this._onZoomEnd, this);
+        }
+    },
+
+    removeHooks: function() {
+        this._drawing = false;
+        this._map.off('zoomstart', this._onZoomStart, this);
+        this._map.off('zoomend', this._onZoomEnd, this);
+
+        L.Draw.Marker.prototype.removeHooks.call(this);
+    },
+
+    _onMouseMove: function(e) {
+        if(this._drawing) {
+            L.Draw.Marker.prototype._onMouseMove.call(this, e);
+
+            var zoom = this.options.ratioAtZoom !== undefined ?
+                        this.options.ratioAtZoom : this._map.getMaxZoom();
+            var centerCoords = this._map.project(this._map.getCenter(), zoom);
+            var markerCoords = this._map.project(this._mouseMarker.getLatLng(), zoom)
+            var coords = markerCoords.subtract(centerCoords);
+
+            this._tooltip.updateContent({
+                text: L.Nanomeasure.Util.readableDistance(coords.x) + ' ' +
+                      L.Nanomeasure.Util.readableDistance(coords.y)
+            });
+        }
+    },
+
+    _onClick: function() {
+        if(this._drawing) {
+            this._drawing = false;
+        } else {
+            this.disable();
+            if (this.options.repeatMode) {
+                this.enable();
+            }
+            this._drawing = true;
+        }
+    },
+
+    _onZoomStart: function(e) {
+        this._tooltip._container.style.visibility = 'hidden';
+    },
+
+    _onZoomEnd: function(e) {
+        this._tooltip.updatePosition(this._mouseMarker.getLatLng());
+
+        this._tooltip._container.style.visibility = 'inherit';
+    },
+});
+
+L.Nanomeasure.PolylineMixin = function(parent) {
     return {
         addHooks: function() {
             parent.prototype.addHooks.call(this);
@@ -36,7 +98,7 @@ L.Nanomeasure.Mixin = function(parent) {
             }
         },
 
-        removeHooks: function () {
+        removeHooks: function() {
             this._finishShape();
             this._map.off('zoomstart', this._onZoomStart, this);
             this._map.off('click', this._onClick, this);
@@ -54,7 +116,7 @@ L.Nanomeasure.Mixin = function(parent) {
             this._map.on('mousemove', this._onMouseMove, this);
         },
 
-        _finishShape: function () {
+        _finishShape: function() {
             this._drawing = false;
 
             this._cleanUpShape();
@@ -111,7 +173,7 @@ L.Nanomeasure.Mixin = function(parent) {
 }
 
 L.Nanomeasure.Distance = L.Draw.Polyline.
-        extend(L.Nanomeasure.Mixin(L.Draw.Polyline)).
+        extend(L.Nanomeasure.PolylineMixin(L.Draw.Polyline)).
         extend({
     _finalize: function() {
         if(this._markers.length > 0) {
@@ -119,7 +181,7 @@ L.Nanomeasure.Distance = L.Draw.Polyline.
         }
     },
 
-    _updateRunningMeasure: function (latlng, added) {
+    _updateRunningMeasure: function(latlng, added) {
         var markersLength = this._markers.length,
             previousMarkerIndex, distance;
 
@@ -139,7 +201,7 @@ L.Nanomeasure.Distance = L.Draw.Polyline.
         }
     },
 
-    _getMeasurementString: function () {
+    _getMeasurementString: function() {
         var currentLatLng = this._currentLatLng,
             previousLatLng = this._markers[this._markers.length - 1].getLatLng(),
             distance;
@@ -158,7 +220,7 @@ L.Nanomeasure.Distance = L.Draw.Polyline.
 });
 
 L.Nanomeasure.Area = L.Draw.Polygon.
-        extend(L.Nanomeasure.Mixin(L.Draw.Polygon)).
+        extend(L.Nanomeasure.PolylineMixin(L.Draw.Polygon)).
         extend({
     _finalize: function() {
         if(this._markers.length > 0) {
@@ -169,7 +231,7 @@ L.Nanomeasure.Area = L.Draw.Polygon.
             this._poly.addLatLng(this._markers[0].getLatLng())
     },
 
-    _vertexChanged: function (latlng, added) {
+    _vertexChanged: function(latlng, added) {
         // Check to see if we should show the area
         if (!this.options.allowIntersection && this.options.showArea) {
             var zoom = this.options.ratioAtZoom !== undefined ?
@@ -184,7 +246,7 @@ L.Nanomeasure.Area = L.Draw.Polygon.
         L.Draw.Polyline.prototype._vertexChanged.call(this, latlng, added);
     },
 
-    _getMeasurementString: function () {
+    _getMeasurementString: function() {
         var area = this._area;
 
         if (!area) {
@@ -198,12 +260,14 @@ L.Nanomeasure.Area = L.Draw.Polygon.
 
 L.Control.Nanomeasure = L.Control.extend({
     statics: {
+        COORDINATES: 'Measure coordinates',
         DISTANCE: 'Measure distance',
         AREA: 'Measure area',
     },
 
     options: {
         position: 'topleft',
+        measureCoordinates: {},
         measureDistance: {},
         measureArea: {},
         nanometersPerPixel: 1000,
@@ -249,17 +313,25 @@ L.Control.Nanomeasure = L.Control.extend({
             .addListener(button, 'click', L.DomEvent.preventDefault)
             .addListener(button, 'click', toggleTool, this);
 
-        measurementTool.on('enabled', function () {
+        measurementTool.on('enabled', function() {
             L.DomUtil.addClass(button, 'enabled');
         }, this);
 
-        measurementTool.on('disabled', function () {
+        measurementTool.on('disabled', function() {
             L.DomUtil.removeClass(button, 'enabled');
         }, this);
     },
 
     onAdd: function(map) {
         this._container = L.DomUtil.create('div', 'leaflet-bar');
+
+        this.addButton('coordinates', L.Control.Nanomeasure.COORDINATES,
+            new L.Nanomeasure.Coordinates(map,
+                L.extend(this.options.measureCoordinates, {
+                    nanometersPerPixel: this.options.nanometersPerPixel,
+                    ratioAtZoom: this.options.ratioAtZoom,
+                    repeatMode: true,
+                })));
 
         this.addButton('distance', L.Control.Nanomeasure.DISTANCE,
             new L.Nanomeasure.Distance(map,
@@ -281,6 +353,6 @@ L.Control.Nanomeasure = L.Control.extend({
     }
 });
 
-L.control.nanomeasure = function (options) {
+L.control.nanomeasure = function(options) {
     return new L.Control.Nanomeasure(options);
 };

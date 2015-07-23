@@ -1,3 +1,7 @@
+.leaflet-control-nanomeasure-coordinates {
+    background-image: url(images/measure-coordinates-2x.png);
+}
+
 .leaflet-control-nanomeasure-distance {
     background-image: url(images/measure-distance-2x.png);
 }
