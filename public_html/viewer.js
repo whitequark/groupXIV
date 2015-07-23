@@ -16,6 +16,7 @@ function initViewer(url, params) {
     var options = JSON.parse(req.responseText);
     options.layers.forEach(function(layer) {
       layer.URL = url + "/../" + layer.URL;
+      layer.URL = layer.URL.replace(/[^\/]+\/..(\/|$)/, '');
     });
 
     document.title = options.name + " \u00b7 GroupXIV microphotography viewer"
