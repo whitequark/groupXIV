@@ -17,6 +17,10 @@ Deploying
 
 Serve the `public_html` folder from any convenient URL.
 
+For example, you could use Python's builtin HTTP server:
+
+    cd public_html && python3 -m http.server 8000
+
 Adding tiles
 ------------
 
