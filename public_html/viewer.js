@@ -26,6 +26,7 @@ function initViewer(url, params) {
       scale: options.scale,
       tileSize: options.tileSize,
       layers: options.layers,
+      tilesAlignedTopLeft: options.tilesAlignedTopLeft,
     });
 
     function moveMap(params) {
