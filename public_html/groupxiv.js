@@ -6,15 +6,17 @@
      URL:       URL of the original image
      width:     original image width
      height:    original image height
-     tileSize:  tile dimension (default: 512)
-     imageSize: tiled image dimension
+     tileSize:  tile dimension
+     imageSize: smallest square image size that fits all tiles at maximum zoom
+     minZoom:   minimum zoom level (default: 1)
+     maxZoom:   maximum zoom level (default: ceil(log2(imageSize/tileSize)))
  */
 function GroupXIV(options) {
   var viewport  = options.viewport,
       scale     = options.scale,
       layers    = options.layers;
 
-  var maxImageSize = 0, maxWidth = 0, maxHeight = 0, maxZoom = 1;
+  var maxImageSize = 0, maxWidth = 0, maxHeight = 0, minZoom = 1, maxZoom = 1;
   layers.forEach(function(layer) {
     if(layer.imageSize > maxImageSize)
       maxImageSize = layer.imageSize;
@@ -23,29 +25,41 @@ function GroupXIV(options) {
     if(layer.height > maxHeight)
       maxHeight = layer.height;
 
-    var zoom = Math.ceil(Math.log2(layer.imageSize / layer.tileSize));
-    if(zoom > maxZoom)
-      maxZoom = zoom;
+    var layerMaxDim = Math.max(layer.width, layer.height);
+    var layerMinZoom = layer.minZoom, layerMaxZoom = layer.maxZoom;
+    if(layerMinZoom === undefined)
+      layerMinZoom = 1;
+    if(layerMaxZoom === undefined)
+      layerMaxZoom = Math.ceil(Math.log2(layer.imageSize / layer.tileSize));
+
+    if(layerMinZoom < minZoom)
+      minZoom = layerMinZoom;
+    if(layerMaxZoom > maxZoom)
+      maxZoom = layerMaxZoom;
   });
 
   var map = L.map(options.viewport, {
-    minZoom: 1,
-    maxZoom: maxZoom + 1,
+    minZoom: minZoom,
+    maxZoom: maxZoom,
     crs:     L.CRS.Simple,
-
-    zoom:    0,
-    center:  [maxImageSize / 2, maxImageSize / 2],
   });
+
+  var center = map.unproject([maxImageSize / 2, maxImageSize / 2], maxZoom);
+  map.setView(center, minZoom);
 
   var marginX = (maxImageSize - maxWidth)  / 2,
       marginY = (maxImageSize - maxHeight) / 2;
   map.setMaxBounds(new L.LatLngBounds(
-    map.unproject([maxImageSize - marginX, marginY], map.getMaxZoom() - 1),
-    map.unproject([marginX, maxImageSize - marginY], map.getMaxZoom() - 1)));
+    map.unproject([maxImageSize - marginX, marginY], maxZoom),
+    map.unproject([marginX, maxImageSize - marginY], maxZoom)));
 
   layers.forEach(function(layer) {
+    var layerMaxZoom = layer.maxZoom;
+    if(layerMaxZoom === undefined)
+      layerMaxZoom = Math.ceil(Math.log2(layer.imageSize / layer.tileSize));
+
     L.tileLayer(layer.URL + "-tiles/{z}/{x}/{y}.png", {
-      maxNativeZoom:   Math.ceil(Math.log2(layer.imageSize / layer.tileSize)),
+      maxNativeZoom:   layerMaxZoom,
       tileSize:        layer.tileSize,
       continuousWorld: true,
       detectRetina:    true,
