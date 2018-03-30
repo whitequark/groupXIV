@@ -73,15 +73,17 @@ function GroupXIV(options) {
     }).addTo(map);
   });
 
-  L.control.nanoscale({
-    nanometersPerPixel: scale,
-    ratioAtZoom: map.getMaxZoom() - 1,
-  }).addTo(map);
+  if(scale !== undefined) {
+    L.control.nanoscale({
+      nanometersPerPixel: scale,
+      ratioAtZoom: maxZoom,
+    }).addTo(map);
 
-  L.control.nanomeasure({
-    nanometersPerPixel: scale,
-    ratioAtZoom: map.getMaxZoom() - 1,
-  }).addTo(map);
+    L.control.nanomeasure({
+      nanometersPerPixel: scale,
+      ratioAtZoom: maxZoom,
+    }).addTo(map);
+  }
 
   L.control.fullscreen({
     forceSeparateButton: true,
