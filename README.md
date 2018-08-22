@@ -1,7 +1,7 @@
 GroupXIV
 ========
 
-GroupXIV is a microphotography viewer based on [Leaflet](http://leaflet.com). It allows to cut an arbitrarily large image into tiles, conveniently display them on a desktop or mobile browser, create persistent URLs, and measure distances and areas.
+GroupXIV is a microphotography viewer based on [Leaflet](http://leafletjs.com). It allows to cut an arbitrarily large image into tiles, conveniently display them on a desktop or mobile browser, create persistent URLs, and measure distances and areas.
 
 For example, see [Atmel ATmega8](http://groupxiv.whitequark.org/#url=data/atmega8.png.json), [Atmel ATtiny24V](http://groupxiv.whitequark.org/#url=data/attiny24v.png.json), [Epson S1D15719](http://groupxiv.whitequark.org/#url=data/S1D15719.png.json).
 
