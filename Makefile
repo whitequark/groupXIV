@@ -16,7 +16,14 @@ STYLESHEETS = \
 	vendor/leaflet.nanomeasure/Control.Nanomeasure.css \
 	groupxiv.css
 
+IMAGES = \
+	vendor/leaflet/images \
+	vendor/leaflet.fullscreen/images \
+	vendor/leaflet.draw/images \
+	vendor/leaflet.nanomeasure/images
+
 .PHONY: bundle
 bundle:
 	cat $(addprefix public_html/,$(JAVASCRIPTS)) >public_html/bundle/groupxiv.js
 	cat $(addprefix public_html/,$(STYLESHEETS)) >public_html/bundle/groupxiv.css
+	cp -r $(addprefix public_html/,$(IMAGES)) public_html/bundle/
