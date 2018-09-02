@@ -18,5 +18,5 @@ STYLESHEETS = \
 
 .PHONY: bundle
 bundle:
-	cat $(JAVASCRIPTS) >bundle/groupxiv.js
-	cat $(STYLESHEETS) >bundle/groupxiv.css
+	cat $(addprefix public_html/,$(JAVASCRIPTS)) >public_html/bundle/groupxiv.js
+	cat $(addprefix public_html/,$(STYLESHEETS)) >public_html/bundle/groupxiv.css
