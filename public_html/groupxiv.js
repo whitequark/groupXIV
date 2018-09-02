@@ -64,12 +64,27 @@ function GroupXIV(options) {
     if(layerMaxZoom === undefined)
       layerMaxZoom = Math.ceil(Math.log2(layer.imageSize / layer.tileSize));
 
-    L.tileLayer(layer.URL + "-tiles/{z}/{x}/{y}.png", {
+    var attribution = "Layer ";
+    if(layer.name) {
+      attribution += layer.name + " (" + layer.URL + ")";
+    } else {
+      attribution += layer.URL;
+    }
+    if(layer.copyright) {
+      attribution += " \u00a9 " + layer.copyright;
+    }
+
+    var tileExt = ".png";
+    if(layer.tileExt) {
+      tileExt = layer.tileExt;
+    }
+
+    L.tileLayer(layer.URL + "-tiles/{z}/{x}/{y}" + tileExt, {
       maxNativeZoom:   layerMaxZoom,
       tileSize:        layer.tileSize,
       continuousWorld: true,
       detectRetina:    true,
-      attribution:     layer.URL,
+      attribution:     attribution,
     }).addTo(map);
   });
 
