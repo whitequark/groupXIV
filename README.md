@@ -15,6 +15,10 @@ The viewer has no server-side code, so it will work with any webserver.
 Deploying
 ---------
 
+First, generate the JavaScript and CSS bundle:
+
+    make bundle
+
 Serve the `public_html` folder from any convenient URL.
 
 For example, you could use Python's builtin HTTP server:
