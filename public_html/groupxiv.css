@@ -7,3 +7,8 @@ body {
   height: 100%;
   background-color: #202020;
 }
+#viewer > .error {
+  padding-top: 1em;
+  text-align: center;
+  color: #ffffff;
+}

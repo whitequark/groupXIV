@@ -64,6 +64,18 @@ function loadViewer(url) {
     options["canChangeUrl"] = true;
     initViewer(options, url);
   };
+  req.onerror = function() {
+    var error = document.createElement("div");
+    error.className = "error";
+    error.innerText = "Cannot load " + url;
+    document.getElementById("viewer").appendChild(error);
+    window.onhashchange = function() {
+      var params = parseHash();
+      if(params["url"] != url) {
+        window.location.reload();
+      }
+    }
+  }
   req.open("get", url, true);
   req.send();
 }
