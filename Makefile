@@ -1,5 +1,6 @@
 JAVASCRIPTS = \
 	vendor/leaflet/leaflet.js \
+	vendor/leaflet.tilelayer.fallback/leaflet.tilelayer.fallback.js \
 	vendor/leaflet.draw/leaflet.draw.js \
 	vendor/leaflet.fullscreen/Control.FullScreen.js \
 	vendor/leaflet.loading/Control.Loading.js \

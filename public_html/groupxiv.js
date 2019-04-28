@@ -9,7 +9,7 @@
      tileSize:  tile dimension
      imageSize: smallest square image size that fits all tiles at maximum zoom
      minZoom:   minimum zoom level (default: 1)
-     maxZoom:   maximum zoom level (default: ceil(log2(imageSize/tileSize)))
+     maxZoom:   maximum zoom level (default: ceil(log2(imageSize/tileSize)) + 1)
  */
 function GroupXIV(options) {
   var viewport  = options.viewport,
@@ -40,7 +40,7 @@ function GroupXIV(options) {
 
   var map = L.map(options.viewport, {
     minZoom: minZoom,
-    maxZoom: maxZoom,
+    maxZoom: maxZoom + 1,
     crs:     L.CRS.Simple,
   });
 
@@ -79,7 +79,7 @@ function GroupXIV(options) {
       tileExt = layer.tileExt;
     }
 
-    L.tileLayer(layer.URL + "-tiles/{z}/{x}/{y}" + tileExt, {
+    L.tileLayer.fallback(layer.URL + "-tiles/{z}/{x}/{y}" + tileExt, {
       maxNativeZoom:   layerMaxZoom,
       tileSize:        layer.tileSize,
       continuousWorld: true,
