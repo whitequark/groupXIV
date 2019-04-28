@@ -63,6 +63,7 @@ function GroupXIV(options) {
   map.fitBounds(bounds);
   map.setMaxBounds(bounds.pad(0.5));
 
+  var baseLayers = {}, overlays = {};
   layers.forEach(function(layer) {
     var layerMaxZoom = layer.maxZoom;
     if(layerMaxZoom === undefined)
@@ -83,14 +84,18 @@ function GroupXIV(options) {
       tileExt = layer.tileExt;
     }
 
-    L.tileLayer.fallback(layer.URL + "-tiles/{z}/{x}/{y}" + tileExt, {
+    var tileLayer = L.tileLayer.fallback(layer.URL + "-tiles/{z}/{x}/{y}" + tileExt, {
       maxNativeZoom:   layerMaxZoom,
       tileSize:        layer.tileSize,
       continuousWorld: true,
       detectRetina:    true,
       attribution:     attribution,
-    }).addTo(map);
+    });
+    tileLayer.addTo(map);
+    baseLayers[layer.name] = tileLayer;
   });
+
+  L.control.layers(baseLayers, overlays).addTo(map);
 
   if(scale !== undefined) {
     L.control.nanoscale({
