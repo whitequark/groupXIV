@@ -63,7 +63,7 @@ function GroupXIV(options) {
   map.fitBounds(bounds);
   map.setMaxBounds(bounds.pad(0.5));
 
-  var baseLayers = {}, overlays = {};
+  var hasBaseLayer = false, baseLayers = {}, overlays = {};
   layers.forEach(function(layer) {
     var layerMaxZoom = layer.maxZoom;
     if(layerMaxZoom === undefined)
@@ -92,7 +92,10 @@ function GroupXIV(options) {
       detectRetina:    true,
       attribution:     attribution,
     });
-    tileLayer.addTo(map);
+    if(!hasBaseLayer) {
+      hasBaseLayer = true;
+      tileLayer.addTo(map);
+    }
     baseLayers[layer.name] = tileLayer;
   });
 
