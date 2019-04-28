@@ -42,6 +42,7 @@ function GroupXIV(options) {
     minZoom: minZoom,
     maxZoom: maxZoom + 1,
     crs:     L.CRS.Simple,
+    wheelPxPerZoomLevel: 120,
   });
 
   var center = map.unproject([maxImageSize / 2, maxImageSize / 2], maxZoom);
