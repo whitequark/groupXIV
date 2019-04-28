@@ -86,6 +86,7 @@ function GroupXIV(options) {
 
     var tileLayer = L.tileLayer.fallback(layer.URL + "-tiles/{z}/{x}/{y}" + tileExt, {
       maxNativeZoom:   layerMaxZoom,
+      bounds:          bounds,
       tileSize:        layer.tileSize,
       continuousWorld: true,
       detectRetina:    true,
