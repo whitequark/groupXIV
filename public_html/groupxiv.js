@@ -10,6 +10,9 @@
      imageSize: smallest square image size that fits all tiles at maximum zoom
      minZoom:   minimum zoom level (default: 1)
      maxZoom:   maximum zoom level (default: ceil(log2(imageSize/tileSize)) + 1)
+     tilesAlignedTopLeft:
+                if true, clip margins for tiles starting at top left and ending at (width, height)
+                if false, clip margins for tiles centered to (imageSize, imageSize) rectangle
  */
 function GroupXIV(options) {
   var viewport  = options.viewport,
