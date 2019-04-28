@@ -33,7 +33,7 @@ function initViewer(options, url) {
     var center = map.project(map.getCenter(), map.getMaxZoom() - 1),
         zoom = map.getZoom();
     var state = "#";
-    if(options["canChangeUrl"]) {
+    if(options["canChangeURL"]) {
       state += "url=" + url + "&";
     }
     state += "x=" + (center.x|0) + "&";
@@ -45,7 +45,7 @@ function initViewer(options, url) {
   moveMap(parseHash());
   window.onhashchange = function() {
     var params = parseHash();
-    if(options["canChangeUrl"] && params["url"] != url) {
+    if(options["canChangeURL"] && params["url"] != url) {
       window.location.reload();
     } else {
       moveMap(params);
@@ -54,6 +54,12 @@ function initViewer(options, url) {
 }
 
 function loadViewer(url) {
+  var canChangeURL = (url === undefined);
+  if (canChangeURL) {
+    var params = parseHash();
+    url = params["url"];
+  }
+
   var req = new XMLHttpRequest();
   req.onload = function() {
     var options = JSON.parse(req.responseText);
@@ -61,7 +67,7 @@ function loadViewer(url) {
       layer.URL = url + "/../" + layer.URL;
       layer.URL = layer.URL.replace(/[^\/]+\/..(\/|$)/, '');
     });
-    options["canChangeUrl"] = true;
+    options["canChangeURL"] = canChangeURL;
     initViewer(options, url);
   };
   req.onerror = function() {
@@ -71,7 +77,7 @@ function loadViewer(url) {
     document.getElementById("viewer").appendChild(error);
     window.onhashchange = function() {
       var params = parseHash();
-      if(params["url"] != url) {
+      if (canChangeURL && params["url"] != url) {
         window.location.reload();
       }
     }
