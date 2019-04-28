@@ -48,20 +48,20 @@ function GroupXIV(options) {
     wheelPxPerZoomLevel: 120,
   });
 
-  var center = map.unproject([maxImageSize / 2, maxImageSize / 2], maxZoom);
-  map.setView(center, minZoom);
-
+  var bounds;
   if(options.tilesAlignedTopLeft) {
-    map.setMaxBounds(new L.LatLngBounds(
+    bounds = new L.LatLngBounds(
       map.unproject([0, 0], maxZoom),
-      map.unproject([maxWidth, maxHeight], maxZoom)));
+      map.unproject([maxWidth, maxHeight], maxZoom));
   } else {
     var marginX = (maxImageSize - maxWidth)  / 2,
         marginY = (maxImageSize - maxHeight) / 2;
-    map.setMaxBounds(new L.LatLngBounds(
+    bounds = new L.LatLngBounds(
       map.unproject([maxImageSize - marginX, marginY], maxZoom),
-      map.unproject([marginX, maxImageSize - marginY], maxZoom)));
+      map.unproject([marginX, maxImageSize - marginY], maxZoom));
   }
+  map.fitBounds(bounds);
+  map.setMaxBounds(bounds.pad(0.5));
 
   layers.forEach(function(layer) {
     var layerMaxZoom = layer.maxZoom;
