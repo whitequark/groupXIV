@@ -53,22 +53,23 @@ function initViewer(options, url) {
   }
 }
 
-function loadViewer(url) {
+function loadViewer(url, options) {
+  var viewerOptions = (options === undefined) ? {} : options;
   var canChangeURL = (url === undefined);
   if (canChangeURL) {
+    viewerOptions["canChangeURL"] = canChangeURL;
     var params = parseHash();
     url = params["url"];
   }
 
   var req = new XMLHttpRequest();
   req.onload = function() {
-    var options = JSON.parse(req.responseText);
-    options.layers.forEach(function(layer) {
+    var responseOptions = JSON.parse(req.responseText);
+    responseOptions.layers.forEach(function(layer) {
       layer.URL = url + "/../" + layer.URL;
       layer.URL = layer.URL.replace(/[^\/]+\/..(\/|$)/, '');
     });
-    options["canChangeURL"] = canChangeURL;
-    initViewer(options, url);
+    initViewer(Object.assign({}, viewerOptions, responseOptions), url);
   };
   req.onerror = function() {
     var error = document.createElement("div");

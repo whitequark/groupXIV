@@ -1,23 +1,25 @@
 /*
  Options:
-   viewport:  DOM id of the viewport
-   scale:     image scale (nm/px)
-   layers:    array of:
-     URL:       URL of the original image
-     width:     original image width
-     height:    original image height
-     tileSize:  tile dimension
-     imageSize: smallest square image size that fits all tiles at maximum zoom
-     minZoom:   minimum zoom level (default: 1)
-     maxZoom:   maximum zoom level (default: ceil(log2(imageSize/tileSize)) + 1)
+   viewport:   DOM id of the viewport
+   scale:      image scale (nm/px)
+   layers:     array of:
+     URL:        URL of the original image
+     width:      original image width
+     height:     original image height
+     tileSize:   tile dimension
+     imageSize:  smallest square image size that fits all tiles at maximum zoom
+     minZoom:    minimum zoom level (default: 1)
+     maxZoom:    maximum zoom level (default: ceil(log2(imageSize/tileSize)) + 1)
      tilesAlignedTopLeft:
-                if true, clip margins for tiles starting at top left and ending at (width, height)
-                if false, clip margins for tiles centered to (imageSize, imageSize) rectangle
+                 if true, clip margins for tiles starting at top left and ending at (width, height)
+                 if false, clip margins for tiles centered to (imageSize, imageSize) rectangle
+   tileBuffer: amount of tiles around the viewport to retain when panning
  */
 function GroupXIV(options) {
-  var viewport  = options.viewport,
-      scale     = options.scale,
-      layers    = options.layers;
+  var viewport   = options.viewport,
+      scale      = options.scale,
+      layers     = options.layers,
+      tileBuffer = options.tileBuffer;
 
   var maxImageSize = 0, maxWidth = 0, maxHeight = 0, minZoom = 1, maxZoom = 1;
   layers.forEach(function(layer) {
@@ -91,6 +93,7 @@ function GroupXIV(options) {
       continuousWorld: true,
       detectRetina:    true,
       attribution:     attribution,
+      keepBuffer:      tileBuffer,
     });
     if(!hasBaseLayer) {
       hasBaseLayer = true;
