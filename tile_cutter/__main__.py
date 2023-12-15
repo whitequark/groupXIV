@@ -53,7 +53,7 @@ for z in range(1, max_zoom + 1):
 
     current_image = 0
     total_images = (image_size // source_size) ** 2
-    start_time = last_report_time = time.clock()
+    start_time = last_report_time = time.perf_counter()
 
     for y in range(0, image_size // source_size):
         for x in range(0, image_size // source_size):
@@ -69,8 +69,8 @@ for z in range(1, max_zoom + 1):
                 tile.save(filename=path)
 
             current_image += 1
-            if time.clock() - last_report_time > 1:
-                last_report_time = time.clock()
+            if time.perf_counter() - last_report_time > 1:
+                last_report_time = time.perf_counter()
                 eta = (last_report_time - start_time) / current_image * \
                         (total_images - current_image)
                 logging.info("completion: %.2f%% (ETA: %dh%dm%ds)",
