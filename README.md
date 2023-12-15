@@ -39,6 +39,33 @@ Adding tiles
 
 The original `image.png` is no longer necessary, however it is recommended to keep it for anyone who would like to download the source of the tileset.
 
+ImageMagick policy limits
+-------------------------
+
+You may find that large images fail to convert, giving one of these messages:
+
+```
+wand.exceptions.ImageError: width or height exceeds limit `' @ error/cache.c/OpenPixelCache/3909
+wand.exceptions.CacheError: cache resources exhausted `' @ error/cache.c/OpenPixelCache/4095
+wand.exceptions.WandError: wand contains no images `MagickWand-1' @ error/magick-image.c/MagickGetImageWidth/6336
+```
+
+These errors are caused by a security policy which has been introduced by ImageMagick to deal with buffer overflow attacks.
+
+To fix this, edit `/etc/ImageMagick-6/policy.xml`:
+
+  * `width or height exceeds limit`: increase `domain="resource" name="width"` and `name="height"` to be greater than the input image.
+  * `wand contains no images`: increase `domain="resource" name="width"` and `name="height"` to be greater than the `tiled size` groupXIV prints out.
+  * `cache resources exhausted`: increase `domain="resource" name="area"` (maximum image cache area in pixels) and `domain="resource" name="disk"` (maximum disk space to use for caching large images).
+
+The following settings seem to work for images up to about 30,000 pixels square, which produced a 32768-pixel tiled square:
+
+  * `width` and `height`: `70KP` (70,000 pixels)
+  * `area`: `128GP` (128 gigapixels)
+  * `disk`: `30GiB` (30 gigabytes)
+
+The command `identify -list resource` can be used to display the current resource limits.
+
 Future improvements
 -------------------
 
